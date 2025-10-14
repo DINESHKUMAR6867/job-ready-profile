@@ -18,7 +18,7 @@ from urllib.parse import urlparse
 
 
 
-import requests
+# import requests
 from requests.exceptions import RequestException, SSLError, Timeout, ConnectionError as ReqConnError
 
 from django.shortcuts import render, redirect
@@ -1214,7 +1214,7 @@ def recommend_certifications(role: str) -> list:
 
     return certifications.get(role, [])
 
-import requests
+# import requests
 
 def recommend_certifications(role: str) -> list:
     """
@@ -1238,17 +1238,17 @@ def recommend_certifications(role: str) -> list:
 
 # ========= Technical analyzer =========
 # ========= Technical analyzer =========
-import requests
+# import requests
 
-import requests
+# import requests
 
-import requests
+# import requests
 import os
 
-import requests
+# import requests
 import os
 
-import requests
+# import requests
 import os
 
 def fetch_certifications_from_platforms(role: str) -> list:
@@ -1429,7 +1429,7 @@ def fetch_certifications_from_platforms(role: str) -> list:
 #                 if not re.match(r'https?://(www\.)?github\.com/[a-zA-Z0-9-_]+', url, re.IGNORECASE):
 #                     return False
 #                 try:
-#                     import requests
+#                     # import requests
 #                     # Make a HEAD request to check if the URL is reachable
 #                     response = requests.head(url, allow_redirects=True, timeout=5)
 #                     # Check if the final URL after redirects is still a GitHub URL
@@ -1815,7 +1815,7 @@ import io
 from typing import Dict
 import matplotlib
 import matplotlib.pyplot as plt
-import requests
+# import requests
 import json
 import re
 
@@ -1828,7 +1828,7 @@ import io
 from typing import Dict
 import matplotlib
 import matplotlib.pyplot as plt
-import requests
+# import requests
 import json
 import re
 
@@ -1841,7 +1841,7 @@ import io
 from typing import Dict
 import matplotlib
 import matplotlib.pyplot as plt
-import requests
+# import requests
 import json
 import re
 
@@ -1854,7 +1854,7 @@ import io
 from typing import Dict
 import matplotlib
 import matplotlib.pyplot as plt
-import requests
+# import requests
 import json
 import re
 
@@ -1867,7 +1867,7 @@ import io
 from typing import Dict
 import matplotlib
 import matplotlib.pyplot as plt
-import requests
+# import requests
 import json
 import re
 
@@ -1878,7 +1878,7 @@ import base64
 import io
 import json
 import hashlib
-import requests
+# import requests
 import matplotlib.pyplot as plt
 import matplotlib
 from typing import List, Dict, Any
@@ -1891,7 +1891,7 @@ import os
 import re
 import tempfile
 import json
-import requests
+# import requests
 import hashlib
 import io
 import base64
