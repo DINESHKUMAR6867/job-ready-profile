@@ -16,7 +16,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1'
 ]
-
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Add your actual domain when you know it
 if os.environ.get('VERCEL_URL'):
     ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
