@@ -1,4 +1,4 @@
-{
+﻿{
   "builds": [
     {
       "src": "profile_scoring/wsgi.py",
@@ -22,7 +22,7 @@
   ],
   "ignore": [
     "media/**",
-    "scoring/static/large_folder/**"  # Adjust based on your structure
+    "scoring/static/large_folder/**"
   ],
   "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
 }
