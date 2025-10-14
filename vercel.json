@@ -25,5 +25,5 @@
     "PYTHON_VERSION": "3.11",
     "USE_REMOTE_DB": "True"
   },
-  "buildCommand": "C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe -m pip install -r requirements.txt && C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe manage.py collectstatic --noinput && C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe manage.py migrate"
+  "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
 }
