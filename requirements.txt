@@ -9,4 +9,3 @@ xhtml2pdf==0.2.11
 pdfminer.six==20221105
 beautifulsoup4==4.12.3
 docx2txt==0.8
-# reportlab==4.2.2  # Commented out for now
