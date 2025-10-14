@@ -10,3 +10,4 @@ pdfminer.six==20221105
 beautifulsoup4==4.12.3
 docx2txt==0.8
 whitenoise==6.6.0
+requests==2.31.0
