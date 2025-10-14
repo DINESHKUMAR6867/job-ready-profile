@@ -1,12 +1,29 @@
 {
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "python3.11"
+  "builds": [
+    {
+      "src": "profile_scoring/wsgi.py",
+      "use": "@vercel/python",
+      "config": { "runtime": "python-3.11" }
+    },
+    {
+      "src": "staticfiles/**",
+      "use": "@vercel/static"
     }
-  },
-  "routes": [
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/api/index.py" }
   ],
-  "buildCommand": "echo 'no build'"
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/staticfiles/"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "profile_scoring/wsgi.py"
+    }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "profile_scoring.settings",
+    "PYTHON_VERSION": "3.11",
+    "USE_REMOTE_DB": "True"
+  },
+  "buildCommand": "C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe -m pip install -r requirements.txt && C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe manage.py collectstatic --noinput && C:\\Users\\saiku\\AppData\\Local\\Programs\\Python\\Python311\\python.exe manage.py migrate"
 }
