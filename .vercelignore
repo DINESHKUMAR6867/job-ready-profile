@@ -1,0 +1,4 @@
+media/**
+scoring/static/large_folder/**
+__pycache__/**
+*.pyc
