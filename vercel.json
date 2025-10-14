@@ -1,27 +1,15 @@
 ﻿{
+  "version": 2,
   "builds": [
     {
       "src": "profile_scoring/wsgi.py",
-      "use": "@vercel/python",
-      "config": { "runtime": "python-3.11" }
-    },
-    {
-      "src": "staticfiles/**",
-      "use": "@vercel/static"
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/staticfiles/"
-    },
-    {
       "src": "/(.*)",
       "dest": "profile_scoring/wsgi.py"
     }
-  ],
-  "env": {
-    "PYTHON_VERSION": "3.11"
-  },
-  "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+  ]
 }
