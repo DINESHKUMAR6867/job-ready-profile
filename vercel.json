@@ -20,10 +20,9 @@
       "dest": "profile_scoring/wsgi.py"
     }
   ],
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "profile_scoring.settings",
-    "PYTHON_VERSION": "3.11",
-    "USE_REMOTE_DB": "True"
-  },
+  "ignore": [
+    "media/**",
+    "scoring/static/large_folder/**"  # Adjust based on your structure
+  ],
   "buildCommand": "pip install -r requirements.txt && python manage.py collectstatic --noinput"
 }
