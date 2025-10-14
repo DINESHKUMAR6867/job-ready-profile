@@ -1,0 +1,650 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Resume</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Lottie -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+  <style>
+    /* ===== Base page ===== */
+    html, body { height: 100%; margin: 0; font-family: 'Segoe UI', sans-serif; }
+    body{
+      background:linear-gradient(135deg,#e0f7fa,#fce4ec);
+      display:flex;justify-content:center;align-items:center;min-height:100vh;
+    }
+    .form-container{
+      background:#ffffffcc;backdrop-filter:blur(10px);padding:30px 40px;border-radius:15px;
+      box-shadow:0 8px 20px rgba(0,0,0,0.1);width:100%;max-width:560px;text-align:center
+    }
+    h1{font-size:1.8em;color:#333;margin-bottom:15px}
+    p{font-size:.95em;color:#666;margin-bottom:25px}
+    label{display:block;font-weight:bold;color:#444;margin-bottom:5px;text-align:left}
+    input[type="text"],input[type="file"],button{
+      width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;margin-bottom:20px;font-size:1em;transition:border-color .2s
+    }
+    input[type="text"]:focus,input[type="file"]:focus{border-color:#42a5f5;outline:none}
+    button{
+      background:linear-gradient(135deg,#42a5f5,#7e57c2);color:#fff;font-size:1.1em;font-weight:bold;border:none;cursor:pointer;
+      transition:transform .2s,box-shadow .2s
+    }
+    button:hover{transform:translateY(-2px);box-shadow:0 6px 15px rgba(0,0,0,0.2)}
+
+    /* ===== Fullscreen Loader ===== */
+    #loaderOverlay{
+      position:fixed; inset:0; z-index:9999; display:none;
+      background:linear-gradient(135deg,#eef7ff,#fff2ff);
+      align-items:center; justify-content:center; padding:24px;
+    }
+    #loaderOverlay.show{ display:flex; }
+
+    .loader-box{
+      display:flex; flex-direction:column; align-items:center; gap:16px;
+      background:#fff; border-radius:24px; padding:28px 24px;
+      box-shadow:0 22px 66px rgba(16,24,40,.18);
+      width:min(92vw, 760px);
+      text-align:center;
+    }
+
+    /* ORDER: 1) plane, 2) bar, 3) sentences */
+    #lottiePlane{ width:clamp(250px,40vw,400px); height:clamp(250px,40vw,400px); }
+
+    /* FIXED: make the bar actually visible */
+    #lottieBar{
+      width:clamp(220px,48vw,560px);
+      height:clamp(130px,2.6vw,22px);
+    }
+
+    #loadingText{ font-size:1.08rem; font-weight:800; color:#0f172a; letter-spacing:.2px; }
+    #etaNote{ font-size:.95rem; color:#475569; margin-bottom:4px; }
+
+    /* Customizing the input and datalist dropdown appearance */
+    #job_role {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    #job_role_label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    /* Styling the datalist */
+    datalist {
+      width: 100%;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      z-index: 999;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    /* Styling the options inside the datalist */
+    #rolesList option {
+      padding: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #rolesList option:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="form-container">
+  <h1>Profile Analyzer</h1>
+  <p>Upload your resume and enter your target job role.</p>
+
+  <form id="resumeForm" method="POST" enctype="multipart/form-data" action="{% url 'analyze_resume' %}">
+    {% csrf_token %}
+
+    <label for="job_role" id="job_role_label">Job Role</label>
+    <input type="text" id="job_role" name="job_role" list="rolesList" placeholder="Type or choose a role (e.g., Software Engineer)" required />
+
+    <datalist id="rolesList">
+  <!-- ==== Technical Roles ==== -->
+  <option value="Software Engineer"></option>
+  <option value="Backend Engineer"></option>
+  <option value="Frontend Engineer"></option>
+  <option value="Full Stack Engineer"></option>
+  <option value="Data Scientist"></option>
+  <option value="Machine Learning Engineer"></option>
+  <option value="MLOps Engineer"></option>
+  <option value="Data Engineer"></option>
+  <option value="DevOps Engineer"></option>
+  <option value="Site Reliability Engineer (SRE)"></option>
+  <option value="Cloud Engineer"></option>
+  <option value="Cloud Architect"></option>
+  <option value="Security Engineer"></option>
+  <option value="QA Engineer"></option>
+  <option value="Automation Engineer"></option>
+  <option value="Mobile App Developer"></option>
+  <option value="Android Developer"></option>
+  <option value="iOS Developer"></option>
+  <option value="Web Developer"></option>
+  <option value="Embedded Engineer"></option>
+  <option value="Blockchain Developer"></option>
+  <option value="AR/VR Developer"></option>
+  <option value="Business Intelligence Engineer"></option>
+  <option value="ETL Developer"></option>
+  <option value="API Developer"></option>
+  <option value="Platform Engineer"></option>
+  <option value="Systems Engineer"></option>
+  <option value="Game Developer"></option>
+  <option value="Salesforce Developer"></option>
+  <option value="SAP Consultant (Tech)"></option>
+  <option value="Product Manager (Tech)"></option>
+  <option value="Technical Program Manager"></option>
+  <option value="Tech Lead"></option>
+  <option value="Engineering Manager"></option>
+  <option value="Active Directory"></option>
+  <option value="Anti Money Laundering (AML)"></option>
+  <option value="Biotechnology"></option>
+  <option value="Biotechnology Internship"></option>
+  <option value="Clinical Data Analyst"></option>
+  <option value="Clinical Research Coordinator"></option>
+  <option value="Computer Science"></option>
+  <option value="Computer Science Internship"></option>
+  <option value="Cyber Security"></option>
+  <option value="Cybersecurity for UK"></option>
+  <option value="Machine Learning Developer"></option>
+  <option value="Embedded Software Engineer"></option>
+  <option value="Network Engineer"></option>
+  <option value="Python Developer"></option>
+  <option value="Java Developer"></option>
+  <option value="Java Full Stack"></option>
+  <option value="Full Stack"></option>
+  <option value="Generative AI"></option>
+  <option value="Healthcare Data Science"></option>
+  <option value="Java Developer"></option>
+  <option value=".Net"></option>
+  <option value="Scrum Master"></option>
+  <option value="ServiceNow Developer"></option>
+  <option value="Software Developer"></option>
+  <option value="Software Engineer"></option>
+  <option value="Workday Analyst"></option>
+
+  <!-- ==== Non-Technical Roles ==== -->
+  <option value="Human Resources (HR) (Non-Tech)"></option>
+<option value="Recruiter (Non-Tech)"></option>
+<option value="Talent Acquisition Specialist (Non-Tech)"></option>
+<option value="HR Manager (Non-Tech)"></option>
+<option value="Marketing (Non-Tech)"></option>
+<option value="Digital Marketing Specialist (Non-Tech)"></option>
+<option value="Content Marketer (Non-Tech)"></option>
+<option value="SEO Specialist (Non-Tech)"></option>
+<option value="Social Media Manager (Non-Tech)"></option>
+<option value="Product Marketing Manager (Non-Tech)"></option>
+<option value="Sales (Non-Tech)"></option>
+<option value="Business Development (Non-Tech)"></option>
+<option value="Account Executive (Non-Tech)"></option>
+<option value="Customer Success Manager (Non-Tech)"></option>
+<option value="Customer Service (Non-Tech)"></option>
+<option value="Finance (Non-Tech)"></option>
+<option value="Financial Analyst (Non-Tech)"></option>
+<option value="Accountant (Non-Tech)"></option>
+<option value="Operations Manager (Non-Tech)"></option>
+<option value="Project Manager (Non-Tech)"></option>
+<option value="Program Manager (Non-Tech)"></option>
+<option value="Technical Writer (Non-Tech)"></option>
+<option value="UX Designer"></option>
+<option value="UI Designer "></option>
+<option value="Graphic Designer (Non-Tech)"></option>
+<option value="Data Entry (Non-Tech)"></option>
+<option value="Office Administrator (Non-Tech)"></option>
+<option value="Consultant (Non-Tech)"></option>
+<option value="Business Analyst (Non-Tech)"></option>
+<option value="Supply Chain Analyst (Non-Tech)"></option>
+<option value="Procurement Specialist (Non-Tech)"></option>
+<option value="Quality Assurance (Non-Tech)"></option>
+<option value="Product Manager (Non-Tech)"></option>
+<option value="Financial Analyst & KYC Analyst & AML (Non-Tech)"></option>
+<option value="Health Care Business Analyst (Non-Tech)"></option>
+<option value="HR Recruiter (Non-Tech)"></option>
+<option value="Manufacturing Engineer (Mechanical)"></option>
+<option value="Mechanical Engineer"></option>
+<option value="Medical Coding (Non-Tech)"></option>
+<option value="Regulatory Affairs (Non-Tech)"></option>
+<option value="Safety Analyst (Non-Tech)"></option>
+<option value="Tax Analyst (Non-Tech)"></option>
+<option value="Supply Chain (Non-Tech)"></option>
+<option value="Project Management (Non-Tech)"></option>
+<option value="Project Management Internship (Non-Tech)"></option>
+<option value="Payroll Analyst (Non-Tech)"></option>
+<option value="Consultant (Non-Tech)"></option>
+<option value="Data Analyst (Non-Tech)"></option>
+<option value="Data Science for Germany (Non-Tech)"></option>
+<option value="Healthcare Data Analyst (Non-Tech)"></option>
+<option value="Health Care Data Engineer (Non-Tech)"></option>
+</datalist>
+
+
+    <label for="resume">Upload Resume:</label>
+    <input type="file" name="resume" id="resume" accept=".pdf,.docx,.doc" required>
+
+    <!-- Hidden fields used by backend views -->
+    <input type="hidden" id="domain" name="domain" value="technical">
+    <input type="hidden" id="tech_role" name="tech_role" value="">
+    <input type="hidden" id="nontech_role" name="nontech_role" value="">
+
+    <button type="submit" id="submitBtn">Analyze Resume</button>
+  </form>
+</div>
+
+<!-- ===== Fullscreen Loader ===== -->
+<div id="loaderOverlay" aria-hidden="true">
+  <div class="loader-box" role="status" aria-live="polite">
+    <!-- 1) PAPER-PLANE LOTTIE -->
+    <div id="lottiePlane" aria-label="paper-plane"></div>
+
+    <!-- 2) PROGRESS BAR LOTTIE -->
+    <div id="lottieBar" aria-label="progress-bar"></div>
+
+    <!-- 3) SENTENCES -->
+    <div id="loadingText">Initializing…</div>
+    <div id="etaNote"></div>
+  </div>
+</div>
+<!-- <script>
+(function(){
+  /* Lottie asset paths (put JSON files in /static/lottie/) */
+  const LOTTIE_PLANE_PATH = "{% static 'lottie/Loading-40-Paperplane.json' %}";
+  const LOTTIE_BAR_PATH   = "{% static 'lottie/progress-bar-fast.json' %}";
+
+  let planeAnim = null, barAnim = null;
+
+  function startPlane(){
+    if (!window.lottie || planeAnim) return;
+    planeAnim = lottie.loadAnimation({
+      container: document.getElementById('lottiePlane'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: LOTTIE_PLANE_PATH
+    });
+  }
+
+  // FIXED: robust init that works across lottie versions and failure modes
+  function initBar(callback){
+    if (!window.lottie) return;
+
+    barAnim = lottie.loadAnimation({
+      container: document.getElementById('lottieBar'),
+      renderer: 'svg',
+      loop: false,
+      autoplay: false,
+      path: LOTTIE_BAR_PATH
+    });
+
+    let fired = false;
+    function fireOnce(){
+      if (fired) return;
+      fired = true;
+      if (typeof callback === 'function') callback();
+    }
+
+    // Different versions emit different events
+    barAnim.addEventListener('config_ready', fireOnce);
+    barAnim.addEventListener('DOMLoaded', fireOnce);
+    barAnim.addEventListener('data_ready', fireOnce);
+
+    // Fallbacks
+    barAnim.addEventListener('data_failed', () => {
+      console.warn('Lottie bar failed to load:', LOTTIE_BAR_PATH);
+      fireOnce();
+    });
+    setTimeout(fireOnce, 1500);
+  }
+
+  // FIXED: safer progress driving even if totalFrames isn’t reported
+  function animateBarForDuration(totalMs){
+    if (!barAnim) return;
+    const start = performance.now();
+    let totalFrames = 0;
+    try { totalFrames = Math.floor(barAnim.getDuration(true)) || 0; } catch(e) {}
+    if (!totalFrames) totalFrames = barAnim.totalFrames || 120;
+
+    function tick(now){
+      const elapsed = now - start;
+      const p = Math.min(1, elapsed / totalMs);
+      const frame = Math.floor(p * (totalFrames - 1));
+      try { barAnim.goToAndStop(frame, true); } catch(e) {}
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* Loader sentences (rotate every 3s) */
+  const messages = [
+    "Reading resume and metadata…",
+    "Extracting skills and experience timeline…",
+    "Scoring role relevance…",
+    "Matching market benchmarks…",
+    "Finalizing your profile…"
+  ];
+  let msgIdx = 0;
+  const loadingTextEl = document.getElementById('loadingText');
+  function cycleMessages(){
+    loadingTextEl.textContent = messages[msgIdx];
+    msgIdx = (msgIdx + 1) % messages.length;
+  }
+
+  // ===== Roles: non-tech set & aliases for routing =====
+  const NON_TECH_SET = new Set([
+    "Account Executive (Non-Tech)",
+    "Accountant (Non-Tech)",
+    "Business Analyst (Non-Tech)",
+    "Business Development (Non-Tech)",
+    "Consultant (Non-Tech)",
+    "Content Marketer (Non-Tech)",
+    "Customer Service (Non-Tech)",
+    "Customer Success Manager (Non-Tech)",
+    "Data Analyst (Non-Tech)",
+    "Data Entry (Non-Tech)",
+    "Data Science for Germany (Non-Tech)",
+    "Digital Marketing Specialist (Non-Tech)",
+    "Finance (Non-Tech)",
+    "Financial Analyst & KYC Analyst & AML (Non-Tech)",
+    "Financial Analyst (Non-Tech)",
+    "Graphic Designer (Non-Tech)",
+    "Health Care Business Analyst (Non-Tech)",
+    "Health Care Data Engineer (Non-Tech)",
+    "Healthcare Data Analyst (Non-Tech)",
+    "HR Manager (Non-Tech)",
+    "HR Recruiter (Non-Tech)",
+    "Human Resources (HR) (Non-Tech)",
+    "Manufacturing Engineer (Mechanical)",
+    "Marketing (Non-Tech)",
+    "Mechanical Engineer",
+    "Medical Coding (Non-Tech)",
+    "Office Administrator (Non-Tech)",
+    "Operations Manager (Non-Tech)",
+    "Payroll Analyst (Non-Tech)",
+    "Product Manager (Non-Tech)",
+    "Product Marketing Manager (Non-Tech)",
+    "Program Manager (Non-Tech)",
+    "Project Manager (Non-Tech)",
+    "Project Management (Non-Tech)",
+    "Project Management Internship (Non-Tech)",
+    "Procurement Specialist (Non-Tech)",
+    "Quality Assurance (Non-Tech)",
+    "Recruiter (Non-Tech)",
+    "Regulatory Affairs (Non-Tech)",
+    "Safety Analyst (Non-Tech)",
+    "Sales (Non-Tech)",
+    "SEO Specialist (Non-Tech)",
+    "Social Media Manager (Non-Tech)",
+    "Supply Chain Analyst (Non-Tech)",
+    "Supply Chain (Non-Tech)",
+    "Talent Acquisition Specialist (Non-Tech)",
+    "Tax Analyst (Non-Tech)",
+    "Technical Writer (Non-Tech)",
+  ]);
+  const NON_TECH_ALIASES = new Map([
+    ["hr","human resources (hr)"],
+    ["human resources","human resources (hr)"],
+    ["ta","talent acquisition specialist"],
+    ["bd","business development"],
+    ["pm","project manager"]
+  ]);
+
+  function canonicalizeRole(v){
+    const t = (v||"").trim().toLowerCase();
+    if (NON_TECH_ALIASES.has(t)) return NON_TECH_ALIASES.get(t);
+    return t;
+  }
+
+  // Persist *new* roles between sessions (localStorage)
+  const LS_KEY = "applywizz_custom_roles";
+  function loadCustomRoles(){
+    try{
+      return JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    }catch(_){ return []; }
+  }
+  function saveCustomRole(role){
+    const arr = loadCustomRoles();
+    if (!arr.find(x => (x||"").toLowerCase() === role.toLowerCase())){
+      arr.push(role);
+      localStorage.setItem(LS_KEY, JSON.stringify(arr));
+    }
+  }
+  function injectCustomRolesIntoDatalist(){
+    const list = document.getElementById('rolesList');
+    const existing = new Set(Array.from(list.options).map(o => (o.value||"").toLowerCase()));
+    loadCustomRoles().forEach(r => {
+      if (!existing.has(r.toLowerCase())){
+        const opt = document.createElement("option");
+        opt.value = r;
+        list.appendChild(opt);
+      }
+    });
+  }
+  injectCustomRolesIntoDatalist();
+
+  // Datalist helpers
+  function roleExistsInDatalist(role){
+    const opts = document.getElementById('rolesList').options;
+    for (let i=0; i<opts.length; i++){
+      if ((opts[i].value||"").toLowerCase() === role.toLowerCase()) return true;
+    }
+    return false;
+  }
+  function ensureRoleInDatalist(role){
+    if (!roleExistsInDatalist(role)){
+      const opt = document.createElement("option");
+      opt.value = role;
+      document.getElementById('rolesList').appendChild(opt);
+    }
+  }
+
+  // Form & loader wiring
+  const form       = document.getElementById('resumeForm');
+  const jobRoleInp = document.getElementById('job_role');
+  const domainInp  = document.getElementById('domain');
+  const techRoleInp   = document.getElementById('tech_role');
+  const nontechRoleInp= document.getElementById('nontech_role');
+  const overlay   = document.getElementById('loaderOverlay');
+  const submitBtn = document.getElementById('submitBtn');
+  const etaNote   = document.getElementById('etaNote');
+
+  form.addEventListener('submit', (e) => {
+    const role = jobRoleInp.value.trim();
+    const hasFile = document.getElementById('resume').files.length > 0;
+    if (!role || !hasFile) return;
+
+    // 1) Always accept & add new role to datalist + localStorage
+    ensureRoleInDatalist(role);
+    saveCustomRole(role);
+
+    // 2) Route to correct analyzer
+    const canon = canonicalizeRole(role);
+    const isNonTech = NON_TECH_SET.has(canon);
+    if (isNonTech) {
+      domainInp.value = "non_technical";
+      nontechRoleInp.value = role;
+      techRoleInp.value = "";
+      form.action = "{% url 'analyze_resume_v2' %}";
+    } else {
+      domainInp.value = "technical";
+      techRoleInp.value = role
+        .toLowerCase()
+        .replace(/\s+/g,'_')
+        .replace(/[()]/g,'')
+        .replace(/[^a-z0-9_]/g,'');
+      nontechRoleInp.value = "";
+      form.action = "{% url 'analyze_resume' %}";
+    }
+
+    // 3) Show loader with deterministic buffer
+    e.preventDefault();
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+    submitBtn.disabled = true;
+
+    const BUFFER_MIN_MS = 15000, BUFFER_MAX_MS = 30000;
+    const bufferMs = Math.floor(Math.random() * (BUFFER_MAX_MS - BUFFER_MIN_MS + 1)) + BUFFER_MIN_MS;
+
+    startPlane();
+    initBar(() => animateBarForDuration(bufferMs));
+
+    cycleMessages();
+    const cycleId = setInterval(cycleMessages, 3000);
+    etaNote.textContent = `This may take about ${Math.floor(bufferMs/1000)} seconds…`;
+
+    setTimeout(() => {
+      clearInterval(cycleId);
+      form.submit();
+    }, bufferMs);
+  });
+})();
+</script> -->
+<script>
+(function(){
+  const LOTTIE_PLANE_PATH = "{% static 'lottie/Loading-40-Paperplane.json' %}";
+  const LOTTIE_BAR_PATH   = "{% static 'lottie/progress-bar-fast.json' %}";
+
+  let planeAnim = null, barAnim = null;
+
+  function startPlane(){
+    if (!window.lottie || planeAnim) return;
+    planeAnim = lottie.loadAnimation({
+      container: document.getElementById('lottiePlane'),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: LOTTIE_PLANE_PATH
+    });
+  }
+
+  function initBar(callback){
+    if (!window.lottie) return;
+    barAnim = lottie.loadAnimation({
+      container: document.getElementById('lottieBar'),
+      renderer: 'svg',
+      loop: false,
+      autoplay: false,
+      path: LOTTIE_BAR_PATH
+    });
+
+    let fired = false;
+    function fireOnce(){
+      if (fired) return;
+      fired = true;
+      if (typeof callback === 'function') callback();
+    }
+    barAnim.addEventListener('config_ready', fireOnce);
+    barAnim.addEventListener('DOMLoaded', fireOnce);
+    barAnim.addEventListener('data_ready', fireOnce);
+    barAnim.addEventListener('data_failed', () => {
+      console.warn('Lottie bar failed to load:', LOTTIE_BAR_PATH);
+      fireOnce();
+    });
+    setTimeout(fireOnce, 1500);
+  }
+
+  function animateBarForDuration(totalMs){
+    if (!barAnim) return;
+    const start = performance.now();
+    let totalFrames = 0;
+    try { totalFrames = Math.floor(barAnim.getDuration(true)) || 0; } catch(e) {}
+    if (!totalFrames) totalFrames = barAnim.totalFrames || 120;
+
+    function tick(now){
+      const elapsed = now - start;
+      const p = Math.min(1, elapsed / totalMs);
+      const frame = Math.floor(p * (totalFrames - 1));
+      try { barAnim.goToAndStop(frame, true); } catch(e) {}
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const messages = [
+    "Reading resume and metadata…",
+    "Extracting skills and experience timeline…",
+    "Scoring role relevance…",
+    "Matching market benchmarks…",
+    "Finalizing your profile…"
+  ];
+  let msgIdx = 0;
+  const loadingTextEl = document.getElementById('loadingText');
+  function cycleMessages(){
+    loadingTextEl.textContent = messages[msgIdx];
+    msgIdx = (msgIdx + 1) % messages.length;
+  }
+
+  // ===== Form & loader wiring =====
+  const form       = document.getElementById('resumeForm');
+  const jobRoleInp = document.getElementById('job_role');
+  const domainInp  = document.getElementById('domain');
+  const techRoleInp   = document.getElementById('tech_role');
+  const nontechRoleInp= document.getElementById('nontech_role');
+  const overlay   = document.getElementById('loaderOverlay');
+  const submitBtn = document.getElementById('submitBtn');
+  const etaNote   = document.getElementById('etaNote');
+
+  form.addEventListener('submit', (e) => {
+    const role = jobRoleInp.value.trim();
+    const hasFile = document.getElementById('resume').files.length > 0;
+    if (!role || !hasFile) return;
+
+    // === Decide Technical vs Non-Technical ===
+    if (role.includes("(Non-Tech)")) {
+      // Non-technical → call analyze_resume_v2
+      domainInp.value = "non_technical";
+      nontechRoleInp.value = role;
+      techRoleInp.value = "";
+      form.action = "{% url 'analyze_resume_v2' %}";
+    } else {
+      // Technical → call analyze_resume
+      domainInp.value = "technical";
+      techRoleInp.value = role
+        .toLowerCase()
+        .replace(/\s+/g,'_')
+        .replace(/[()]/g,'')
+        .replace(/[^a-z0-9_]/g,'');
+      nontechRoleInp.value = "";
+      form.action = "{% url 'analyze_resume' %}";
+    }
+
+    // === Show loader with buffer ===
+    e.preventDefault();
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+    submitBtn.disabled = true;
+
+    const BUFFER_MIN_MS = 15000, BUFFER_MAX_MS = 30000;
+    const bufferMs = Math.floor(Math.random() * (BUFFER_MAX_MS - BUFFER_MIN_MS + 1)) + BUFFER_MIN_MS;
+
+    startPlane();
+    initBar(() => animateBarForDuration(bufferMs));
+
+    cycleMessages();
+    const cycleId = setInterval(cycleMessages, 3000);
+    etaNote.textContent = `This may take about ${Math.floor(bufferMs/1000)} seconds…`;
+
+    setTimeout(() => {
+      clearInterval(cycleId);
+      form.submit();
+    }, bufferMs);
+  });
+})();
+</script>
+
+
+</body>
+</html>
