@@ -5,20 +5,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-insecure-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    os.getenv('RENDER_URL', 'profile-scoring-1-wqww.onrender.com'),
-    os.getenv('VERCEL_URL', 'profile-scoring.vercel.app'),
-    '.vercel.app',
-]
-CSRF_TRUSTED_ORIGINS = [
-    'https://profile-scoring-1-wqww.onrender.com',
-    'https://profile-scoring.vercel.app',
-    'https://*.vercel.app',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000').split(',')
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
