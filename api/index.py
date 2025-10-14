@@ -1,7 +1,7 @@
 # Vercel Python Function entrypoint for Django via vercel-wsgi
 # Docs: https://github.com/juancarlospaco/vercel-wsgi (community)
 import os
-from vercel_wsgi import handle
+from vercel_wsgi_adapter import handle
 
 # Ensure Django can find settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "profile_scoring.settings")
