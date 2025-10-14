@@ -4,6 +4,7 @@ import os
 from vercel_wsgi import handle
 
 
+
 # Ensure Django can find settings
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "profile_scoring.settings")
 
