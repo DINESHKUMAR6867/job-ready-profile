@@ -3,7 +3,7 @@ Django==4.2.7
 # gunicorn==21.2.0
 gunicorn==21.2.0
 # psycopg2-binary==2.9.7
-psycopg2-binary==2.9.9
+psycopg2-binary
 dj_database_url==2.1.0
 python-dotenv==1.0.0
 pypdf==3.17.0
