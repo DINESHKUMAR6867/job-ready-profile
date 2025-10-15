@@ -57,6 +57,29 @@ INSTALLED_APPS = [
     'scoring',
 ]
 
+import os
+
+# Vercel specific settings
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+ALLOWED_HOSTS = [
+    '.vercel.app',
+    '.now.sh',
+    'localhost',
+    '127.0.0.1'
+]
+
+# Add your Vercel domain when available
+if os.environ.get('VERCEL_URL'):
+    ALLOWED_HOSTS.append(os.environ.get('VERCEL_URL'))
+
+# Static files
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Vercel-specific: Add Whitenoise for static files
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
