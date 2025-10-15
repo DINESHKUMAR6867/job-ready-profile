@@ -11,4 +11,5 @@ beautifulsoup4==4.13.5
 python-dotenv==1.0.1
 requests==2.32.3
 pdfminer.six
+python-docx
 
