@@ -42,13 +42,40 @@ load_dotenv()
 
 # PDF export
 # from xhtml2pdf import pisa
-from weasyprint import HTML
-import io
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.utils.html import strip_tags
+from bs4 import BeautifulSoup
 
-def generate_pdf(html_content):
-    pdf_file = io.BytesIO()
-    HTML(string=html_content).write_pdf(pdf_file)
-    return pdf_file
+def generate_pdf(html_content: str):
+    """
+    Convert a simple HTML string to a PDF using ReportLab.
+    This works on Vercel because it avoids Cairo/Pango dependencies.
+    """
+    # Create a buffer
+    pdf_buffer = BytesIO()
+    p = canvas.Canvas(pdf_buffer, pagesize=letter)
+
+    # Basic HTML → text conversion (strip tags or use BeautifulSoup for a cleaner result)
+    soup = BeautifulSoup(html_content, "html.parser")
+    text_content = soup.get_text()
+
+    # Start drawing text line by line
+    text_object = p.beginText(50, 750)  # (x, y) starting position
+    text_object.setFont("Helvetica", 12)
+
+    for line in text_content.splitlines():
+        if line.strip():
+            text_object.textLine(line.strip())
+
+    p.drawText(text_object)
+    p.showPage()
+    p.save()
+
+    pdf_buffer.seek(0)
+    return pdf_buffer
+
 
 
 # ===== Utils (your modules) =====
@@ -783,99 +810,105 @@ def verify_login_otp(request):
 #     return response
 # # 
 
-from weasyprint import HTML
-import io
+from io import BytesIO
+from bs4 import BeautifulSoup
+from django.http import HttpResponse
+from django.template.loader import get_template
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 def download_resume_pdf(request):
-    # Pull either key (tech/non-tech)
-    context = request.session.get("resume_context_tech") or \
-              request.session.get("resume_context_nontech") or \
-              request.session.get("resume_context", {})
-    
-    # Get the user's role from context
-    user_role = context.get("role", "")
-    
-    # Check if the user's role is non-technical
-    if user_role in [
-    "Account Executive (Non-Tech)",
-    "Accountant (Non-Tech)",
-    "Business Analyst (Non-Tech)",
-    "Business Development (Non-Tech)",
-    "Consultant (Non-Tech)",
-    "Content Marketer (Non-Tech)",
-    "Customer Service (Non-Tech)",
-    "Customer Success Manager (Non-Tech)",
-    "Data Analyst (Non-Tech)",
-    "Data Entry (Non-Tech)",
-    "Data Science for Germany (Non-Tech)",
-    "Digital Marketing Specialist (Non-Tech)",
-    "Finance (Non-Tech)",
-    "Financial Analyst & KYC Analyst & AML (Non-Tech)",
-    "Financial Analyst (Non-Tech)",
-    "Graphic Designer (Non-Tech)",
-    "Health Care Business Analyst (Non-Tech)",
-    "Health Care Data Engineer (Non-Tech)",
-    "Healthcare Data Analyst (Non-Tech)",
-    "HR Manager (Non-Tech)",
-    "HR Recruiter (Non-Tech)",
-    "Human Resources (HR) (Non-Tech)",
-    "Manufacturing Engineer (Mechanical)",
-    "Marketing (Non-Tech)",
-    "Mechanical Engineer",
-    "Medical Coding (Non-Tech)",
-    "Office Administrator (Non-Tech)",
-    "Operations Manager (Non-Tech)",
-    "Payroll Analyst (Non-Tech)",
-    "Product Manager (Non-Tech)",
-    "Product Marketing Manager (Non-Tech)",
-    "Program Manager (Non-Tech)",
-    "Project Manager (Non-Tech)",
-    "Project Management (Non-Tech)",
-    "Project Management Internship (Non-Tech)",
-    "Procurement Specialist (Non-Tech)",
-    "Quality Assurance (Non-Tech)",
-    "Recruiter (Non-Tech)",
-    "Regulatory Affairs (Non-Tech)",
-    "Safety Analyst (Non-Tech)",
-    "Sales (Non-Tech)",
-    "SEO Specialist (Non-Tech)",
-    "Social Media Manager (Non-Tech)",
-    "Supply Chain Analyst (Non-Tech)",
-    "Supply Chain (Non-Tech)",
-    "Talent Acquisition Specialist (Non-Tech)",
-    "Tax Analyst (Non-Tech)",
-    "Technical Writer (Non-Tech)",
+    # Pull context from session (tech / non-tech / generic)
+    context = (
+        request.session.get("resume_context_tech") or
+        request.session.get("resume_context_nontech") or
+        request.session.get("resume_context", {})
+    )
 
-    ]:
-        # Set template to score_of_non_tech.html for non-technical roles
-        template_path = "score_of_non_tech.html"
-    else:
-        # Default to resume_result.html for technical roles
-        template_path = "resume_result.html"
-    
-    # Get the template and render HTML
+    # Determine template based on user role
+    user_role = context.get("role", "")
+    non_tech_roles = [
+        "Account Executive (Non-Tech)",
+        "Accountant (Non-Tech)",
+        "Business Analyst (Non-Tech)",
+        "Business Development (Non-Tech)",
+        "Consultant (Non-Tech)",
+        "Content Marketer (Non-Tech)",
+        "Customer Service (Non-Tech)",
+        "Customer Success Manager (Non-Tech)",
+        "Data Analyst (Non-Tech)",
+        "Data Entry (Non-Tech)",
+        "Data Science for Germany (Non-Tech)",
+        "Digital Marketing Specialist (Non-Tech)",
+        "Finance (Non-Tech)",
+        "Financial Analyst & KYC Analyst & AML (Non-Tech)",
+        "Financial Analyst (Non-Tech)",
+        "Graphic Designer (Non-Tech)",
+        "Health Care Business Analyst (Non-Tech)",
+        "Health Care Data Engineer (Non-Tech)",
+        "Healthcare Data Analyst (Non-Tech)",
+        "HR Manager (Non-Tech)",
+        "HR Recruiter (Non-Tech)",
+        "Human Resources (HR) (Non-Tech)",
+        "Manufacturing Engineer (Mechanical)",
+        "Marketing (Non-Tech)",
+        "Mechanical Engineer",
+        "Medical Coding (Non-Tech)",
+        "Office Administrator (Non-Tech)",
+        "Operations Manager (Non-Tech)",
+        "Payroll Analyst (Non-Tech)",
+        "Product Manager (Non-Tech)",
+        "Product Marketing Manager (Non-Tech)",
+        "Program Manager (Non-Tech)",
+        "Project Manager (Non-Tech)",
+        "Project Management (Non-Tech)",
+        "Project Management Internship (Non-Tech)",
+        "Procurement Specialist (Non-Tech)",
+        "Quality Assurance (Non-Tech)",
+        "Recruiter (Non-Tech)",
+        "Regulatory Affairs (Non-Tech)",
+        "Safety Analyst (Non-Tech)",
+        "Sales (Non-Tech)",
+        "SEO Specialist (Non-Tech)",
+        "Social Media Manager (Non-Tech)",
+        "Supply Chain Analyst (Non-Tech)",
+        "Supply Chain (Non-Tech)",
+        "Talent Acquisition Specialist (Non-Tech)",
+        "Tax Analyst (Non-Tech)",
+        "Technical Writer (Non-Tech)",
+    ]
+
+    template_path = "score_of_non_tech.html" if user_role in non_tech_roles else "resume_result.html"
+
+    # Render the HTML content
     template = get_template(template_path)
-    html = template.render(context)
-    
-    # Get the applicant's name from context (assuming it's available)
+    html_content = template.render(context)
+
+    # Extract plain text from HTML for PDF generation
+    soup = BeautifulSoup(html_content, "html.parser")
+    text_content = soup.get_text()
+
+    # Prepare the PDF buffer
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    text_object = p.beginText(50, 750)
+    text_object.setFont("Helvetica", 12)
+
+    # Write text content line by line
+    for line in text_content.splitlines():
+        if line.strip():
+            text_object.textLine(line.strip())
+
+    p.drawText(text_object)
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+
+    # Create the HTTP response
     applicant_name = context.get("applicant_name", "unknown_applicant")
-    
-    # Create the response and set the content type
-    response = HttpResponse(content_type="application/pdf")
+    response = HttpResponse(buffer, content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{applicant_name}_Profilevalidation_Report.pdf"'
-    
-    # Create PDF from HTML content using weasyprint
-    try:
-        # Convert HTML to PDF
-        pdf_file = HTML(string=html).write_pdf()
-        
-        # Write PDF to response
-        response.write(pdf_file)
-        
-    except Exception as e:
-        # Fallback: return error response
-        return HttpResponse(f"We had some errors generating PDF: {str(e)}")
-    
+
     return response
 
 def recommend_certifications(role: str) -> list:

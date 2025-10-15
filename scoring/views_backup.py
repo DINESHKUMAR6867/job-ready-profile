@@ -783,99 +783,105 @@ def verify_login_otp(request):
 #     return response
 # # 
 
-from weasyprint import HTML
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 import io
 
 def download_resume_pdf(request):
     # Pull either key (tech/non-tech)
-    context = request.session.get("resume_context_tech") or \
-              request.session.get("resume_context_nontech") or \
-              request.session.get("resume_context", {})
-    
+    context = (
+        request.session.get("resume_context_tech")
+        or request.session.get("resume_context_nontech")
+        or request.session.get("resume_context", {})
+    )
+
     # Get the user's role from context
     user_role = context.get("role", "")
-    
-    # Check if the user's role is non-technical
-    if user_role in [
-    "Account Executive (Non-Tech)",
-    "Accountant (Non-Tech)",
-    "Business Analyst (Non-Tech)",
-    "Business Development (Non-Tech)",
-    "Consultant (Non-Tech)",
-    "Content Marketer (Non-Tech)",
-    "Customer Service (Non-Tech)",
-    "Customer Success Manager (Non-Tech)",
-    "Data Analyst (Non-Tech)",
-    "Data Entry (Non-Tech)",
-    "Data Science for Germany (Non-Tech)",
-    "Digital Marketing Specialist (Non-Tech)",
-    "Finance (Non-Tech)",
-    "Financial Analyst & KYC Analyst & AML (Non-Tech)",
-    "Financial Analyst (Non-Tech)",
-    "Graphic Designer (Non-Tech)",
-    "Health Care Business Analyst (Non-Tech)",
-    "Health Care Data Engineer (Non-Tech)",
-    "Healthcare Data Analyst (Non-Tech)",
-    "HR Manager (Non-Tech)",
-    "HR Recruiter (Non-Tech)",
-    "Human Resources (HR) (Non-Tech)",
-    "Manufacturing Engineer (Mechanical)",
-    "Marketing (Non-Tech)",
-    "Mechanical Engineer",
-    "Medical Coding (Non-Tech)",
-    "Office Administrator (Non-Tech)",
-    "Operations Manager (Non-Tech)",
-    "Payroll Analyst (Non-Tech)",
-    "Product Manager (Non-Tech)",
-    "Product Marketing Manager (Non-Tech)",
-    "Program Manager (Non-Tech)",
-    "Project Manager (Non-Tech)",
-    "Project Management (Non-Tech)",
-    "Project Management Internship (Non-Tech)",
-    "Procurement Specialist (Non-Tech)",
-    "Quality Assurance (Non-Tech)",
-    "Recruiter (Non-Tech)",
-    "Regulatory Affairs (Non-Tech)",
-    "Safety Analyst (Non-Tech)",
-    "Sales (Non-Tech)",
-    "SEO Specialist (Non-Tech)",
-    "Social Media Manager (Non-Tech)",
-    "Supply Chain Analyst (Non-Tech)",
-    "Supply Chain (Non-Tech)",
-    "Talent Acquisition Specialist (Non-Tech)",
-    "Tax Analyst (Non-Tech)",
-    "Technical Writer (Non-Tech)",
 
-    ]:
-        # Set template to score_of_non_tech.html for non-technical roles
+    # Check if the user's role is non-technical
+    non_tech_roles = [
+        "Account Executive (Non-Tech)",
+        "Accountant (Non-Tech)",
+        "Business Analyst (Non-Tech)",
+        "Business Development (Non-Tech)",
+        "Consultant (Non-Tech)",
+        "Content Marketer (Non-Tech)",
+        "Customer Service (Non-Tech)",
+        "Customer Success Manager (Non-Tech)",
+        "Data Analyst (Non-Tech)",
+        "Data Entry (Non-Tech)",
+        "Data Science for Germany (Non-Tech)",
+        "Digital Marketing Specialist (Non-Tech)",
+        "Finance (Non-Tech)",
+        "Financial Analyst & KYC Analyst & AML (Non-Tech)",
+        "Financial Analyst (Non-Tech)",
+        "Graphic Designer (Non-Tech)",
+        "Health Care Business Analyst (Non-Tech)",
+        "Health Care Data Engineer (Non-Tech)",
+        "Healthcare Data Analyst (Non-Tech)",
+        "HR Manager (Non-Tech)",
+        "HR Recruiter (Non-Tech)",
+        "Human Resources (HR) (Non-Tech)",
+        "Manufacturing Engineer (Mechanical)",
+        "Marketing (Non-Tech)",
+        "Mechanical Engineer",
+        "Medical Coding (Non-Tech)",
+        "Office Administrator (Non-Tech)",
+        "Operations Manager (Non-Tech)",
+        "Payroll Analyst (Non-Tech)",
+        "Product Manager (Non-Tech)",
+        "Product Marketing Manager (Non-Tech)",
+        "Program Manager (Non-Tech)",
+        "Project Manager (Non-Tech)",
+        "Project Management (Non-Tech)",
+        "Project Management Internship (Non-Tech)",
+        "Procurement Specialist (Non-Tech)",
+        "Quality Assurance (Non-Tech)",
+        "Recruiter (Non-Tech)",
+        "Regulatory Affairs (Non-Tech)",
+        "Safety Analyst (Non-Tech)",
+        "Sales (Non-Tech)",
+        "SEO Specialist (Non-Tech)",
+        "Social Media Manager (Non-Tech)",
+        "Supply Chain Analyst (Non-Tech)",
+        "Supply Chain (Non-Tech)",
+        "Talent Acquisition Specialist (Non-Tech)",
+        "Tax Analyst (Non-Tech)",
+        "Technical Writer (Non-Tech)",
+    ]
+
+    # Choose template based on role
+    if user_role in non_tech_roles:
         template_path = "score_of_non_tech.html"
     else:
-        # Default to resume_result.html for technical roles
         template_path = "resume_result.html"
-    
-    # Get the template and render HTML
+
+    # Render HTML
     template = get_template(template_path)
     html = template.render(context)
-    
-    # Get the applicant's name from context (assuming it's available)
+
+    # Get applicant name for PDF file name
     applicant_name = context.get("applicant_name", "unknown_applicant")
-    
-    # Create the response and set the content type
-    response = HttpResponse(content_type="application/pdf")
+
+    # Create a byte stream for PDF
+    pdf_buffer = io.BytesIO()
+
+    # Convert HTML to PDF using xhtml2pdf
+    pisa_status = pisa.CreatePDF(
+        io.StringIO(html),
+        dest=pdf_buffer,
+        encoding='utf-8'
+    )
+
+    if pisa_status.err:
+        return HttpResponse(f"Error generating PDF: {pisa_status.err}")
+
+    # Return the PDF file as response
+    response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = f'attachment; filename="{applicant_name}_Profilevalidation_Report.pdf"'
-    
-    # Create PDF from HTML content using weasyprint
-    try:
-        # Convert HTML to PDF
-        pdf_file = HTML(string=html).write_pdf()
-        
-        # Write PDF to response
-        response.write(pdf_file)
-        
-    except Exception as e:
-        # Fallback: return error response
-        return HttpResponse(f"We had some errors generating PDF: {str(e)}")
-    
     return response
 
 def recommend_certifications(role: str) -> list:
